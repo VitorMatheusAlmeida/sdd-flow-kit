@@ -125,3 +125,17 @@ test('the project .env fills unset variables (testEmailEnv, password) and the sh
   assert.equal(project.testEmail, 'qa@example.test');
   assert.equal(process.env.KIT_FIXTURE_SHELL, 'from-shell');
 });
+
+test('--env <name> reads .env.<name> before .env', async () => {
+  const { loadProject } = await import('../template/.claude/skills/flow-walkthrough/scripts/lib/context.mjs');
+  const dir = fixtureCopy();
+  const configFile = path.join(dir, 'sdd.config.json');
+  const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+  config.environments.test = { backendUrl: 'http://localhost:3002/api' };
+  fs.writeFileSync(configFile, JSON.stringify(config));
+  fs.writeFileSync(path.join(dir, '.env'), 'KIT_FIXTURE_LAYER=from-env\n');
+  fs.writeFileSync(path.join(dir, '.env.test'), 'KIT_FIXTURE_LAYER=from-env-test\n');
+  const project = loadProject({ config: configFile, env: 'test' });
+  assert.equal(project.env.backendUrl, 'http://localhost:3002/api');
+  assert.equal(process.env.KIT_FIXTURE_LAYER, 'from-env-test');
+});

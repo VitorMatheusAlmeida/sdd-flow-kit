@@ -103,7 +103,7 @@ At the project root; your editor validates and completes it through `.specify/sd
 | `auth` | how scripts sign in with test accounts: `loginPath`, `loginBody` (`{email}`, `{password}`), `tokenPath`, `headerScheme`, `cookieName` (the cookie the frontend reads) |
 | `commands` | how this project runs `lint`, `typecheck`, `test`, `testRelated`, `e2e`, `build`, `audit` |
 | `environments` | `frontendUrl` and `backendUrl` per environment (scripts use the first one, or `--env`) |
-| `accounts` | `roles` (name → test e-mail; include **two accounts of the same role** to test foreign data), `passwordEnv` (the variable holding the test password — never in the file; the project `.env` is read too), `source` (the seed that creates them) |
+| `accounts` | `roles` (name → test e-mail; include **two accounts of the same role** to test foreign data), `passwordEnv` (the variable holding the test password — never in the file; the project `.env` is read too — and `.env.<environment>` first when scripts run with `--env <environment>`), `source` (the seed that creates them) |
 | `testEmail` / `testEmailEnv` | the only real inbox e-mails may go to during tests — the address itself, or the name of the variable that holds it (scripts read the shell and the project `.env`, the shell wins) |
 | `walkthrough` | `outputDir`, `viewports`, `minTouchTargetPx`, `testDataPrefix`, `notFoundText`, `designSkill`, `domainRules` (your pricing/refund/legal documents), `decisions` (`dbIdsInUrl`, `urlLanguage`, `sentenceCase`), `text.pluralNouns`, `selectors.toast`, extra `sensitiveKeys` / `personKeys`, and `codeRules` (your own mechanical checks) |
 | `tables` | `source` (generated DBML) and `base` for the diagrams |

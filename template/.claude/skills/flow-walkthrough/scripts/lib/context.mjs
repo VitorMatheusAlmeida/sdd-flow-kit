@@ -34,12 +34,16 @@ export function findConfig(start = process.cwd()) {
   }
 }
 
-/** The project's `.env` (next to sdd.config.json) fills variables that are not set yet; the shell always wins. */
-function loadDotEnv(root) {
-  const file = path.join(root, '.env');
-  if (!fs.existsSync(file)) return;
-  for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(file, 'utf8')))) {
-    if (process.env[key] === undefined) process.env[key] = value;
+/**
+ * The project's env files (next to sdd.config.json) fill variables that are not set yet: first
+ * `.env.<environment>` (e.g. `.env.test` with `--env test`), then `.env`. The shell always wins.
+ */
+function loadDotEnv(root, envName) {
+  const files = [envName && `.env.${envName}`, '.env'].filter(Boolean).map((name) => path.join(root, name));
+  for (const file of files.filter((f) => fs.existsSync(f))) {
+    for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(file, 'utf8')))) {
+      if (process.env[key] === undefined) process.env[key] = value;
+    }
   }
 }
 
@@ -52,12 +56,12 @@ export function loadProject(args = {}) {
     throw new Error('sdd.config.json not found (searched from the current folder up). Install sdd-flow-kit in the project (node install.mjs <project>) or copy its template/sdd.config.json to the project root.');
   }
   const root = path.dirname(file);
-  loadDotEnv(root);
   const raw = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
   const fromConfig = (p) => (typeof p === 'string' ? path.resolve(root, p) : undefined);
   const fromArg = (p) => (typeof p === 'string' ? path.resolve(p) : undefined);
   const envName = typeof args.env === 'string' ? args.env : Object.keys(raw.environments ?? {})[0];
   const env = raw.environments?.[envName] ?? {};
+  loadDotEnv(root, envName);
   const walkthrough = raw.walkthrough ?? {};
   const locale = raw.project?.locale ?? 'en';
 
