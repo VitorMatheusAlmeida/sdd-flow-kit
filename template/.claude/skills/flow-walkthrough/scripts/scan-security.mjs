@@ -83,8 +83,10 @@ async function scanLive(project, flow, args, t) {
     const health = await headersOf(base + project.backend.healthPath);
     if (health.status && health.h.get('x-powered-by')) items.push({ where: 'API', msg: t('sec.poweredBy', { value: health.h.get('x-powered-by') }) });
     if (health.status && !health.h.get('strict-transport-security') && !health.h.get('x-frame-options')) items.push({ where: 'API', msg: t('sec.noHelmet') });
-    const docs = await headersOf(base + project.backend.docsPath);
-    if (docs.status === 200) items.push({ where: `API ${project.backend.docsPath}`, msg: t('sec.docsOpen') });
+    // Resolved as a URL reference: '/docs' is at the server root (Swagger usually sits outside the global prefix), 'docs' below backendUrl.
+    const docsUrl = new URL(project.backend.docsPath, `${base}/`).href;
+    const docs = await headersOf(docsUrl);
+    if (docs.status === 200) items.push({ where: docsUrl, msg: t('sec.docsOpen') });
   }
 
   // Screens: headers against clickjacking, MIME sniffing and origin leaks.

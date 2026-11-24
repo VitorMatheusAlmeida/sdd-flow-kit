@@ -69,7 +69,8 @@ export async function signIn(project, scenario, args) {
   const password = testPassword(project, args);
   const failures = [];
   for (const [name, email] of accounts) {
-    const body = replace(project.auth.loginBody, { email, password });
+    // The account value is the login identifier (e-mail or username): {email}, {login} and {username} all take it.
+    const body = replace(project.auth.loginBody, { email, login: email, username: email, password });
     const r = await call(project, null, 'POST', project.auth.loginPath, body);
     tokens[name] = pick(r.json, project.auth.tokenPath) ?? null;
     if (!tokens[name]) failures.push(`${name} (${r.status})`);

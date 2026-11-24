@@ -111,3 +111,17 @@ test('a missing sdd.config.json stops with a clear message', () => {
   assert.equal(r.code, 2);
   assert.match(r.err, /sdd\.config\.json not found/);
 });
+
+test('the project .env fills unset variables (testEmailEnv, password) and the shell wins', async () => {
+  const { loadProject } = await import('../template/.claude/skills/flow-walkthrough/scripts/lib/context.mjs');
+  const dir = fixtureCopy();
+  const configFile = path.join(dir, 'sdd.config.json');
+  const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
+  config.testEmailEnv = 'KIT_FIXTURE_TEST_EMAIL';
+  fs.writeFileSync(configFile, JSON.stringify(config));
+  fs.writeFileSync(path.join(dir, '.env'), 'KIT_FIXTURE_TEST_EMAIL=qa@example.test\nKIT_FIXTURE_SHELL=from-file\n');
+  process.env.KIT_FIXTURE_SHELL = 'from-shell';
+  const project = loadProject({ config: configFile });
+  assert.equal(project.testEmail, 'qa@example.test');
+  assert.equal(process.env.KIT_FIXTURE_SHELL, 'from-shell');
+});

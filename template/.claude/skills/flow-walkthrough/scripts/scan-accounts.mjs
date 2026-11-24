@@ -69,7 +69,8 @@ async function main() {
       const ok = r.status >= 200 && r.status < 300;
       if (r.status >= 500 || r.status === 0) flags.push('5xx');
       if (!c.public && ok && (account === 'anonymous' || !owners.includes(account))) flags.push('foreign-2xx');
-      if (r.status >= 400 && r.status < 500 && (!code || RAW.test(message))) flags.push('off-catalog');
+      // errorShape.code null: the API has no error code; only a raw message is off the catalog.
+      if (r.status >= 400 && r.status < 500 && ((shape.code && !code) || RAW.test(message))) flags.push('off-catalog');
       const keys = sensitiveKeys(r.json);
       if (keys.length) flags.push(`sensitive(${keys.slice(0, 3).join(', ')})`);
       if (r.ms > 2000) flags.push('slow');

@@ -24,7 +24,7 @@ Everything specific to a project lives in **`sdd.config.json`** at the repositor
 | `auth.*` | how the scripts sign in with test accounts (login route, body, token path, cookie) |
 | `environments.<name>` | frontend and backend URLs (the first one unless `--env`) |
 | `accounts.roles`, `accounts.passwordEnv`, `accounts.source` | test accounts (never real people) and where they are created |
-| `testEmail` | the only real inbox e-mails may go to |
+| `testEmail` (or `testEmailEnv`, a variable of the shell or of the project `.env`) | the only real inbox e-mails may go to |
 | `commands.*` | how to lint, type-check, test, audit in this project |
 | `walkthrough.*` | output folder, viewports, touch target, test-data prefix, not-found text, design skill, domain rules, project decisions, extra checks |
 
@@ -105,7 +105,7 @@ Detail and commands: [`reference/protocol.md`](reference/protocol.md).
 - A stress impossible to simulate stays as a **limitation**, with the reason, and the owner is told. **Only hardware is a limit:** a missing scenario or data (a cancelled item, an account without items, two of something) **is created in the seed of the flow** and exercised.
 - Out of scope only by the owner's decision, recorded in the matrix.
 - **Scripts add, they never replace** ([`reference/script-layer.md`](reference/script-layer.md)): they give full coverage and raw material, they do not approve a cell, open a screen branch or judge design. Every alert is decided in the matrix. A mechanical defect found by hand becomes a check (the ratchet: `walkthrough.codeRules` or a scenario).
-- Test data uses `walkthrough.testDataPrefix` and is cleaned at the end; e-mails go only to `testEmail`.
+- Test data uses `walkthrough.testDataPrefix` and is cleaned at the end; e-mails go only to `testEmail` (or the address in `testEmailEnv`).
 - A laborious flow is the expected case. Do not shorten it to reach the PR.
 
 ## Scripts

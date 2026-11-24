@@ -2,6 +2,7 @@
 // (sdd.config.json, found from the current folder up), the walkthrough folder and the flows file.
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseEnv } from 'node:util';
 
 export function parseArgs(argv = process.argv.slice(2)) {
   const out = { _: [] };
@@ -33,6 +34,15 @@ export function findConfig(start = process.cwd()) {
   }
 }
 
+/** The project's `.env` (next to sdd.config.json) fills variables that are not set yet; the shell always wins. */
+function loadDotEnv(root) {
+  const file = path.join(root, '.env');
+  if (!fs.existsSync(file)) return;
+  for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(file, 'utf8')))) {
+    if (process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
 const trimSlash = (url) => (typeof url === 'string' ? url.replace(/\/+$/, '') : undefined);
 
 /** Reads sdd.config.json and fills the defaults. `--frontend`, `--pages`, `--backend`, `--base`, `--site` override (e.g. a worktree). */
@@ -42,6 +52,7 @@ export function loadProject(args = {}) {
     throw new Error('sdd.config.json not found (searched from the current folder up). Install sdd-flow-kit in the project (node install.mjs <project>) or copy its template/sdd.config.json to the project root.');
   }
   const root = path.dirname(file);
+  loadDotEnv(root);
   const raw = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
   const fromConfig = (p) => (typeof p === 'string' ? path.resolve(root, p) : undefined);
   const fromArg = (p) => (typeof p === 'string' ? path.resolve(p) : undefined);
@@ -83,6 +94,7 @@ export function loadProject(args = {}) {
       backendUrl: trimSlash(typeof args.base === 'string' ? args.base : env.backendUrl),
     },
     accounts: { passwordEnv: 'SDD_TEST_PASSWORD', roles: {}, ...raw.accounts },
+    testEmail: raw.testEmail ?? (raw.testEmailEnv ? process.env[raw.testEmailEnv] : undefined),
     commands: raw.commands ?? {},
     walkthrough: {
       outputDir: 'walkthrough',

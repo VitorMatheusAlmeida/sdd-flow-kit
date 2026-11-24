@@ -46,12 +46,12 @@
           "description": "How routes are discovered. 'manual': each flow lists its routes in flows.json."
         },
         "healthPath": { "type": "string", "default": "/health", "description": "Route used to read the API security headers." },
-        "docsPath": { "type": "string", "default": "/api", "description": "Route of the API documentation (Swagger). Must be closed in production." },
+        "docsPath": { "type": "string", "default": "/api", "description": "API documentation (Swagger), resolved against backendUrl as a URL reference: '/docs' is at the server root, 'docs' below backendUrl. Must be closed in production." },
         "errorShape": {
           "type": "object",
           "description": "Fields of an error response body.",
           "properties": {
-            "code": { "type": "string", "default": "code" },
+            "code": { "type": ["string", "null"], "default": "code", "description": "null when the API has no error code (then only a raw message is off the catalog)." },
             "message": { "type": "string", "default": "message" }
           }
         }
@@ -65,7 +65,7 @@
         "loginBody": {
           "type": "object",
           "default": { "email": "{email}", "password": "{password}" },
-          "description": "Login request body; {email} and {password} are replaced."
+          "description": "Login request body; {email} (or {login}, {username}) takes the account value and {password} the test password."
         },
         "tokenPath": { "type": "string", "default": "access_token", "description": "Dot path of the token in the login response." },
         "headerScheme": { "type": "string", "default": "Bearer" },
@@ -105,11 +105,12 @@
         "roles": {
           "type": "object",
           "additionalProperties": { "type": "string" },
-          "description": "Account name → e-mail. Include two accounts of the same role, to test foreign data."
+          "description": "Account name → login identifier (e-mail or username). Include two accounts of the same role, to test foreign data."
         }
       }
     },
     "testEmail": { "type": "string", "description": "The only real inbox e-mails may go to during tests." },
+    "testEmailEnv": { "type": "string", "description": "Environment variable (or .env entry) holding testEmail, when the address should not live in the repository." },
     "walkthrough": {
       "type": "object",
       "properties": {
