@@ -13,19 +13,17 @@ This skill and its scripts are in English. **What it produces is in `project.loc
 
 ## Project setup it reads
 
-Everything specific to a project lives in **`sdd.config.json`** at the repository root (shipped by sdd-flow-kit, filled in per project). No path, account or rule of a project is written in this skill.
+Every project fact has **one owner**. What the code, the seed or an env file already states is read from there; **`sdd.config.json`** at the repository root holds only what no other file owns (shipped by sdd-flow-kit, filled in per project). No path, account or rule of a project is written in this skill.
 
 | Key | Used for |
 |---|---|
 | `project.locale` | language of the matrix, reports and findings |
 | `frontend.root`, `frontend.pages`, `frontend.router` | screens of a flow (`next-app-router` discovers them; `manual` lists them in `flows.json`) |
 | `backend.root`, `backend.framework` | routes of a flow (`nestjs` discovers them; `manual` lists them) |
-| `backend.healthPath`, `backend.docsPath`, `backend.errorShape` | security headers, documentation route, error code and message fields |
-| `auth.*` | how the scripts sign in with test accounts (login route, body, token path, cookie) |
-| `environments.<name>` | frontend and backend URLs (the first one unless `--env`); with `--env <name>` the scripts read `.env.<name>` before `.env` (e.g. `--env test` → `.env.test`) |
-| `accounts.roles`, `accounts.passwordEnv`, `accounts.source` | test accounts (never real people) and where they are created |
-| `testEmail` (or `testEmailEnv`, a variable of the shell or of the project `.env`) | the only real inbox e-mails may go to |
-| `commands.*` | how to lint, type-check, test, audit in this project |
+| read from the code (`nestjs`): prefix, Swagger, health and login routes, login body, session cookie, error body | sign-in, security headers, documentation route, error code and message. Set `backend.*` / `auth.*` only to override |
+| read from the env file of the environment: `PORT` (+ prefix) and `FRONTEND_URL` | API and frontend URLs. `.env.test` → `test` (the default), `.env` → `local`, chosen with `--env`; only that file is loaded |
+| `accounts.roles`, `accounts.source` | test accounts (never real people) and the seed that creates them; read the password there and pass `--password` (or use `accounts.passwordEnv` / `accounts.password`) |
+| `testEmail` / `testEmailEnv` (optional) | the only real inbox e-mails may go to; without it, the addresses of the env file |
 | `walkthrough.*` | output folder, viewports, touch target, test-data prefix, not-found text, design skill, domain rules, project decisions, extra checks |
 
 Missing `sdd.config.json`: stop and ask the owner to create it from the template — do not guess paths or accounts.
@@ -114,6 +112,7 @@ Detail and commands: [`reference/protocol.md`](reference/protocol.md).
 
 | Script | What it does |
 |---|---|
+| `show-config.mjs [--env <name>]` | what the scripts resolved and where each value came from (config, code, env file, default) |
 | `inventory.mjs --flow <id>` | creates or updates `matrix-<id>.md` from the code, keeping what was filled in |
 | `verify-matrix.mjs <matrix.md>` | fails while a cell is not done, lacks evidence or justification, or the second round has no date |
 | `scan-code.mjs --flow <id>` | static scan of screens and components (points 6–8, 10, 13, 14, 16) + `walkthrough.codeRules` |

@@ -4,13 +4,20 @@
   "title": "sdd-flow-kit project configuration",
   "description": "One file per project: sdd.config.json at the repository root. The kit's skills and scripts read it. Relative paths are relative to this file.",
   "type": "object",
-  "required": ["project"],
+  "required": [
+    "project"
+  ],
   "properties": {
     "project": {
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
-        "name": { "type": "string", "description": "Product name, used in generated headers." },
+        "name": {
+          "type": "string",
+          "description": "Product name, used in generated headers."
+        },
         "locale": {
           "type": "string",
           "default": "en",
@@ -21,16 +28,30 @@
     "git": {
       "type": "object",
       "properties": {
-        "baseBranch": { "type": "string", "default": "main", "description": "Branch features start from and merge into." }
+        "baseBranch": {
+          "type": "string",
+          "default": "main",
+          "description": "Branch features start from and merge into."
+        }
       }
     },
     "frontend": {
       "type": "object",
       "properties": {
-        "root": { "type": "string", "description": "Frontend source root. Scanned to find which screen calls each route." },
-        "pages": { "type": "string", "description": "Folder whose page files the router maps to URLs." },
+        "root": {
+          "type": "string",
+          "description": "Frontend source root. Scanned to find which screen calls each route."
+        },
+        "pages": {
+          "type": "string",
+          "description": "Folder whose page files the router maps to URLs."
+        },
         "router": {
-          "enum": ["next-app-router", "manual", "none"],
+          "enum": [
+            "next-app-router",
+            "manual",
+            "none"
+          ],
           "default": "manual",
           "description": "How screens are discovered. 'manual': each flow lists its screens in flows.json."
         }
@@ -39,60 +60,134 @@
     "backend": {
       "type": "object",
       "properties": {
-        "root": { "type": "string", "description": "Backend source root." },
+        "root": {
+          "type": "string",
+          "description": "Backend source root."
+        },
         "framework": {
-          "enum": ["nestjs", "manual", "none"],
+          "enum": [
+            "nestjs",
+            "manual",
+            "none"
+          ],
           "default": "manual",
           "description": "How routes are discovered. 'manual': each flow lists its routes in flows.json."
         },
-        "healthPath": { "type": "string", "default": "/health", "description": "Route used to read the API security headers." },
-        "docsPath": { "type": "string", "default": "/api", "description": "API documentation (Swagger), resolved against backendUrl as a URL reference: '/docs' is at the server root, 'docs' below backendUrl. Must be closed in production." },
+        "healthPath": {
+          "type": "string",
+          "default": "/health",
+          "description": "Route used to read the API security headers. With framework nestjs it is read from the code; set it only to override."
+        },
+        "docsPath": {
+          "type": "string",
+          "default": "/api",
+          "description": "API documentation (Swagger), resolved against backendUrl as a URL reference: '/docs' is at the server root, 'docs' below backendUrl. Must be closed in production. With framework nestjs it is read from the code; set it only to override."
+        },
         "errorShape": {
           "type": "object",
-          "description": "Fields of an error response body.",
+          "description": "Fields of an error response body. With framework nestjs it is read from the code; set it only to override.",
           "properties": {
-            "code": { "type": ["string", "null"], "default": "code", "description": "null when the API has no error code (then only a raw message is off the catalog)." },
-            "message": { "type": "string", "default": "message" }
+            "code": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": "code",
+              "description": "null when the API has no error code (then only a raw message is off the catalog)."
+            },
+            "message": {
+              "type": "string",
+              "default": "message"
+            }
           }
+        },
+        "envDir": {
+          "type": "string",
+          "description": "Folder of the backend env files (.env, .env.test). Default: the nearest folder above backend.root with a package.json."
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Global route prefix (e.g. /api). With framework nestjs it is read from the code; set it only to override."
         }
       }
     },
     "auth": {
       "type": "object",
-      "description": "How the walkthrough scripts sign in with the test accounts.",
+      "description": "How the walkthrough scripts sign in with test accounts. With framework nestjs it is read from the code; set it only to override.",
       "properties": {
-        "loginPath": { "type": "string", "default": "/auth/login" },
+        "loginPath": {
+          "type": "string",
+          "default": "/auth/login"
+        },
         "loginBody": {
           "type": "object",
-          "default": { "email": "{email}", "password": "{password}" },
+          "default": {
+            "email": "{email}",
+            "password": "{password}"
+          },
           "description": "Login request body; {email} (or {login}, {username}) takes the account value and {password} the test password."
         },
-        "tokenPath": { "type": "string", "default": "access_token", "description": "Dot path of the token in the login response." },
-        "headerScheme": { "type": "string", "default": "Bearer" },
-        "cookieName": { "type": "string", "default": "token", "description": "Cookie the frontend reads the session from (screens and captures)." }
+        "tokenPath": {
+          "type": "string",
+          "default": "access_token",
+          "description": "Dot path of the token in the login response."
+        },
+        "headerScheme": {
+          "type": "string",
+          "default": "Bearer"
+        },
+        "cookieName": {
+          "type": "string",
+          "default": "token",
+          "description": "Cookie the frontend reads the session from (screens and captures)."
+        }
       }
     },
     "commands": {
       "type": "object",
-      "description": "How each check runs in this project. Skills use these instead of guessing.",
+      "description": "Optional. How each check runs, when the package.json scripts do not say it.",
       "properties": {
-        "lint": { "type": "string" },
-        "typecheck": { "type": "string" },
-        "test": { "type": "string" },
-        "testRelated": { "type": "string", "description": "Runs only the tests related to the given files (pre-commit hook)." },
-        "e2e": { "type": "string" },
-        "build": { "type": "string" },
-        "audit": { "type": "string", "description": "Dependency audit (production dependencies)." }
+        "lint": {
+          "type": "string"
+        },
+        "typecheck": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string"
+        },
+        "testRelated": {
+          "type": "string",
+          "description": "Runs only the tests related to the given files (pre-commit hook)."
+        },
+        "e2e": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        },
+        "audit": {
+          "type": "string",
+          "description": "Dependency audit (production dependencies)."
+        }
       }
     },
     "environments": {
       "type": "object",
-      "description": "Name → URLs. Scripts use the first one unless --env is given.",
+      "description": "Optional. Without it, there is one environment per env file in backend.envDir: .env.test → test (the default when it exists), .env → local. The API URL is http://localhost:<PORT><prefix> and the frontend URL is FRONTEND_URL, both from that env file, which is the only one loaded. Use this key only for URLs no env file states.",
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "frontendUrl": { "type": "string" },
-          "backendUrl": { "type": "string" }
+          "envFile": {
+            "type": "string",
+            "description": "Env file of this environment (default: .env for local, .env.<name> otherwise)."
+          },
+          "frontendUrl": {
+            "type": "string"
+          },
+          "backendUrl": {
+            "type": "string"
+          }
         }
       }
     },
@@ -100,17 +195,36 @@
       "type": "object",
       "description": "Test accounts. Never real people; the password comes from an environment variable.",
       "properties": {
-        "source": { "type": "string", "description": "Where the accounts are created (seed file)." },
-        "passwordEnv": { "type": "string", "default": "SDD_TEST_PASSWORD" },
+        "source": {
+          "type": "string",
+          "description": "Where the accounts are created (seed file). With no password key, the agent reads the password there and passes --password."
+        },
+        "passwordEnv": {
+          "type": "string",
+          "default": "SDD_TEST_PASSWORD",
+          "description": "Environment variable (shell or project .env) holding the test password. Wins over accounts.password."
+        },
+        "password": {
+          "type": "string",
+          "description": "The test password itself, ONLY when it is a public development value (e.g. the password the seed creates). A real secret goes in passwordEnv."
+        },
         "roles": {
           "type": "object",
-          "additionalProperties": { "type": "string" },
+          "additionalProperties": {
+            "type": "string"
+          },
           "description": "Account name → login identifier (e-mail or username). Include two accounts of the same role, to test foreign data."
         }
       }
     },
-    "testEmail": { "type": "string", "description": "The only real inbox e-mails may go to during tests." },
-    "testEmailEnv": { "type": "string", "description": "Environment variable (or .env entry) holding testEmail, when the address should not live in the repository." },
+    "testEmail": {
+      "type": "string",
+      "description": "The only real inbox e-mails may go to during tests."
+    },
+    "testEmailEnv": {
+      "type": "string",
+      "description": "Environment variable (or .env entry) holding testEmail, when the address should not live in the repository."
+    },
     "walkthrough": {
       "type": "object",
       "properties": {
@@ -119,14 +233,38 @@
           "default": "walkthrough",
           "description": "Folder of flows.json, scenarios, matrices, reports and captures. Inside the current feature folder when the project uses spec-kit (.specify/feature.json), else at the repository root."
         },
-        "viewports": { "type": "array", "items": { "type": "integer" }, "default": [1280, 390] },
-        "minTouchTargetPx": { "type": "integer", "default": 40 },
-        "testDataPrefix": { "type": "string", "default": "QA_", "description": "Prefix of data created during a walkthrough, so it can be found and cleaned." },
-        "notFoundText": { "type": "string", "description": "Text of the not-found page. Default by locale." },
-        "designSkill": { "type": "string", "description": "Skill invoked on every captured screen (points 11 and 12). Optional." },
+        "viewports": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "default": [
+            1280,
+            390
+          ]
+        },
+        "minTouchTargetPx": {
+          "type": "integer",
+          "default": 40
+        },
+        "testDataPrefix": {
+          "type": "string",
+          "default": "QA_",
+          "description": "Prefix of data created during a walkthrough, so it can be found and cleaned."
+        },
+        "notFoundText": {
+          "type": "string",
+          "description": "Text of the not-found page. Default by locale."
+        },
+        "designSkill": {
+          "type": "string",
+          "description": "Skill invoked on every captured screen (points 11 and 12). Optional."
+        },
         "domainRules": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Project documents with domain rules a walkthrough must check (pricing, refunds, legal texts)."
         },
         "decisions": {
@@ -134,12 +272,22 @@
           "description": "Project decisions that change how a point is judged.",
           "properties": {
             "dbIdsInUrl": {
-              "enum": ["forbid", "ignore"],
+              "enum": [
+                "forbid",
+                "ignore"
+              ],
               "default": "forbid",
               "description": "'ignore' turns the database-id part of points 14 and 16 into 🚫 (out of scope)."
             },
-            "urlLanguage": { "type": "string", "description": "Language URLs are written in." },
-            "sentenceCase": { "type": "boolean", "default": true, "description": "Capital letter only at the start of a label (point 7)." }
+            "urlLanguage": {
+              "type": "string",
+              "description": "Language URLs are written in."
+            },
+            "sentenceCase": {
+              "type": "boolean",
+              "default": true,
+              "description": "Capital letter only at the start of a label (point 7)."
+            }
           }
         },
         "text": {
@@ -147,7 +295,9 @@
           "properties": {
             "pluralNouns": {
               "type": "array",
-              "items": { "type": "string" },
+              "items": {
+                "type": "string"
+              },
               "description": "Plural nouns of the domain; '1 <noun>' on a screen raises plural-with-1."
             }
           }
@@ -155,23 +305,58 @@
         "selectors": {
           "type": "object",
           "properties": {
-            "toast": { "type": "string", "default": "[data-sonner-toast]", "description": "CSS selector of a floating notice (toast)." }
+            "toast": {
+              "type": "string",
+              "default": "[data-sonner-toast]",
+              "description": "CSS selector of a floating notice (toast)."
+            }
           }
         },
-        "sensitiveKeys": { "type": "array", "items": { "type": "string" }, "description": "Extra response keys that must never leave the API." },
-        "personKeys": { "type": "array", "items": { "type": "string" }, "description": "Extra keys holding the id of a person (e.g. sellerId)." },
+        "sensitiveKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Extra response keys that must never leave the API."
+        },
+        "personKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Extra keys holding the id of a person (e.g. sellerId)."
+        },
         "codeRules": {
           "type": "array",
           "description": "Project checks added to scan-code (the ratchet: a mechanical defect found by hand becomes a rule).",
           "items": {
             "type": "object",
-            "required": ["point", "pattern", "message"],
+            "required": [
+              "point",
+              "pattern",
+              "message"
+            ],
             "properties": {
-              "point": { "type": "integer", "minimum": 1, "maximum": 18 },
-              "pattern": { "type": "string", "description": "Regular expression (JavaScript syntax)." },
-              "flags": { "type": "string", "default": "g" },
-              "onlyIn": { "type": "string", "description": "Regular expression on the file path; the rule runs only where it matches." },
-              "message": { "type": "string" }
+              "point": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 18
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regular expression (JavaScript syntax)."
+              },
+              "flags": {
+                "type": "string",
+                "default": "g"
+              },
+              "onlyIn": {
+                "type": "string",
+                "description": "Regular expression on the file path; the rule runs only where it matches."
+              },
+              "message": {
+                "type": "string"
+              }
             }
           }
         }
@@ -179,10 +364,16 @@
     },
     "tables": {
       "type": "object",
-      "description": "Defaults for speckit-tables when a feature filter omits them.",
+      "description": "Optional defaults for speckit-tables when a feature filter omits them (base defaults to git.baseBranch).",
       "properties": {
-        "source": { "type": "string", "default": "dbml/schema.dbml" },
-        "base": { "type": "string", "description": "Branch or commit 'touched' is measured against." }
+        "source": {
+          "type": "string",
+          "default": "dbml/schema.dbml"
+        },
+        "base": {
+          "type": "string",
+          "description": "Branch or commit 'touched' is measured against."
+        }
       }
     }
   }

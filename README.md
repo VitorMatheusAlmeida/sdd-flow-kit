@@ -9,7 +9,7 @@ A drop-in **spec-driven development** setup for [Claude Code](https://claude.com
 - **Code-quality skills**: `clean-code`, `modulos-backend` (NestJS + Prisma module structure, queries, cache and queues) and `code-analyze` (reviews that hunt bugs and flow problems).
 - **Project hygiene**: husky hooks that lint and run **only the tests related to the staged files**, Conventional Commits, ESLint architecture rules, issue and PR templates.
 
-Everything project-specific lives in `sdd.config.json`. No skill hard-codes a path, an account or a rule of your project.
+Every project fact has one owner: what the code, the seed or an env file already states is read from there, and `sdd.config.json` holds only what no other file owns. No skill hard-codes a path, an account or a rule of your project.
 
 ## How it fits together
 
@@ -92,6 +92,8 @@ Then add the hooks of `template/.specify/extensions.yml` to your `.specify/exten
 
 ### 1. `sdd.config.json`
 
+**Only what no other file owns.** A fact the code, the seed or an env file already states is read from there, never copied: two places for one fact drift apart. `node .claude/skills/flow-walkthrough/scripts/show-config.mjs` prints what was resolved and where each value came from.
+
 At the project root; your editor validates and completes it through `.specify/sdd.config.schema.json`. Relative paths are relative to the file.
 
 | Section | What to fill in |
@@ -99,14 +101,11 @@ At the project root; your editor validates and completes it through `.specify/sd
 | `project` | `name`; `locale` — the language of every generated document (`pt-BR` and `en` are built in) |
 | `git` | `baseBranch` — where features start and merge |
 | `frontend` | `root` (source), `pages` (router folder), `router`: `next-app-router` \| `manual` \| `none`. A frontend in another repository: a relative path to its checkout |
-| `backend` | `root`, `framework`: `nestjs` \| `manual` \| `none`, `healthPath`, `docsPath` (Swagger), `errorShape` (fields of an error body) |
-| `auth` | how scripts sign in with test accounts: `loginPath`, `loginBody` (`{email}`, `{password}`), `tokenPath`, `headerScheme`, `cookieName` (the cookie the frontend reads) |
-| `commands` | how this project runs `lint`, `typecheck`, `test`, `testRelated`, `e2e`, `build`, `audit` |
-| `environments` | `frontendUrl` and `backendUrl` per environment (scripts use the first one, or `--env`) |
-| `accounts` | `roles` (name → test e-mail; include **two accounts of the same role** to test foreign data), `passwordEnv` (the variable holding the test password — never in the file; the project `.env` is read too — and `.env.<environment>` first when scripts run with `--env <environment>`), `source` (the seed that creates them) |
-| `testEmail` / `testEmailEnv` | the only real inbox e-mails may go to during tests — the address itself, or the name of the variable that holds it (scripts read the shell and the project `.env`, the shell wins) |
-| `walkthrough` | `outputDir`, `viewports`, `minTouchTargetPx`, `testDataPrefix`, `notFoundText`, `designSkill`, `domainRules` (your pricing/refund/legal documents), `decisions` (`dbIdsInUrl`, `urlLanguage`, `sentenceCase`), `text.pluralNouns`, `selectors.toast`, extra `sensitiveKeys` / `personKeys`, and `codeRules` (your own mechanical checks) |
-| `tables` | `source` (generated DBML) and `base` for the diagrams |
+| `backend` | `root` and `framework`: `nestjs` \| `manual` \| `none`. With `nestjs`, the prefix, Swagger path, health and login routes, login body, session cookie and error body are **read from the code** — write `backend.*` or `auth.*` only to override |
+| environments | **read from the env files** of the backend: `.env.test` → `test` (default), `.env` → `local`. The API URL is `http://localhost:<PORT><prefix>` and the frontend URL is `FRONTEND_URL`, from the chosen file only. `environments` in the config only for URLs no env file states |
+| `accounts` | `roles` (name → login of a seed account; include **two accounts of the same role** to test foreign data) and `source` (the seed). The agent reads the password in the seed and passes `--password`; `passwordEnv` or `password` exist for other setups |
+| `testEmail` / `testEmailEnv` | optional: the only real inbox e-mails may go to during tests. Without it, the addresses in the env file |
+| `walkthrough` | `outputDir`, `testDataPrefix`, `designSkill`, `domainRules` (your pricing/refund/legal documents), `decisions` (`dbIdsInUrl`, `urlLanguage`, `sentenceCase`), `text.pluralNouns`, and optional `viewports`, `minTouchTargetPx`, `notFoundText`, `selectors.toast`, `sensitiveKeys`, `personKeys`, `codeRules` |
 
 ### 2. Constitution
 
@@ -184,7 +183,8 @@ The walkthrough scripts can also run by hand, from the project:
 ```bash
 node .claude/skills/flow-walkthrough/scripts/inventory.mjs --flow R01
 node .claude/skills/flow-walkthrough/scripts/scan-code.mjs --flow R01 > specs/001-x/passagem/scan-code-R01.md
-SDD_TEST_PASSWORD=... node .claude/skills/flow-walkthrough/scripts/scan-accounts.mjs --flow R01
+node .claude/skills/flow-walkthrough/scripts/show-config.mjs   # what was read, and from where
+node .claude/skills/flow-walkthrough/scripts/scan-accounts.mjs --flow R01 --password <seed password>
 node .claude/skills/flow-walkthrough/scripts/verify-matrix.mjs specs/001-x/passagem/matrix-R01.md
 ```
 
