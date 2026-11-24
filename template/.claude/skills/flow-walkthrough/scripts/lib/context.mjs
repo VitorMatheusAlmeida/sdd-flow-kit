@@ -2,6 +2,7 @@
 // (sdd.config.json, found from the current folder up), the walkthrough folder and the flows file.
 import fs from 'node:fs';
 import path from 'node:path';
+import { parseEnv } from 'node:util';
 
 export function parseArgs(argv = process.argv.slice(2)) {
   const out = { _: [] };
@@ -33,6 +34,19 @@ export function findConfig(start = process.cwd()) {
   }
 }
 
+/**
+ * The project's env files (next to sdd.config.json) fill variables that are not set yet: first
+ * `.env.<environment>` (e.g. `.env.test` with `--env test`), then `.env`. The shell always wins.
+ */
+function loadDotEnv(root, envName) {
+  const files = [envName && `.env.${envName}`, '.env'].filter(Boolean).map((name) => path.join(root, name));
+  for (const file of files.filter((f) => fs.existsSync(f))) {
+    for (const [key, value] of Object.entries(parseEnv(fs.readFileSync(file, 'utf8')))) {
+      if (process.env[key] === undefined) process.env[key] = value;
+    }
+  }
+}
+
 const trimSlash = (url) => (typeof url === 'string' ? url.replace(/\/+$/, '') : undefined);
 
 /** Reads sdd.config.json and fills the defaults. `--frontend`, `--pages`, `--backend`, `--base`, `--site` override (e.g. a worktree). */
@@ -47,6 +61,7 @@ export function loadProject(args = {}) {
   const fromArg = (p) => (typeof p === 'string' ? path.resolve(p) : undefined);
   const envName = typeof args.env === 'string' ? args.env : Object.keys(raw.environments ?? {})[0];
   const env = raw.environments?.[envName] ?? {};
+  loadDotEnv(root, envName);
   const walkthrough = raw.walkthrough ?? {};
   const locale = raw.project?.locale ?? 'en';
 
@@ -83,6 +98,7 @@ export function loadProject(args = {}) {
       backendUrl: trimSlash(typeof args.base === 'string' ? args.base : env.backendUrl),
     },
     accounts: { passwordEnv: 'SDD_TEST_PASSWORD', roles: {}, ...raw.accounts },
+    testEmail: raw.testEmail ?? (raw.testEmailEnv ? process.env[raw.testEmailEnv] : undefined),
     commands: raw.commands ?? {},
     walkthrough: {
       outputDir: 'walkthrough',
