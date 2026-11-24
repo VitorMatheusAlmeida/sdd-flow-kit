@@ -1,0 +1,11 @@
+{
+  "project": { "name": "fixture", "locale": "pt-BR" },
+  "frontend": { "root": "web/src", "pages": "web/src/app", "router": "next-app-router" },
+  "backend": { "root": "api/src", "framework": "nestjs" },
+  "environments": { "local": { "frontendUrl": "http://localhost:3999", "backendUrl": "http://localhost:3998" } },
+  "accounts": { "roles": { "owner": "owner@example.test", "otherOwner": "other@example.test" } },
+  "walkthrough": {
+    "outputDir": "walkthrough",
+    "codeRules": [{ "point": 12, "pattern": "className=\"container\\b", "onlyIn": "\\(public\\)", "message": "contêiner sem recuo" }]
+  }
+}

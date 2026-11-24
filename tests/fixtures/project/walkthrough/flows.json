@@ -1,0 +1,9 @@
+{
+  "flows": {
+    "R01": {
+      "name": "Inscrever-se num curso",
+      "screens": ["(public)/courses/**/page.tsx", "(app)/enrollments/page.tsx"],
+      "controllers": ["courses/courses.controller.ts", "enrollments/enrollments.controller.ts"]
+    }
+  }
+}

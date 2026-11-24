@@ -1,0 +1,14 @@
+{
+  "name": "sdd-flow-kit",
+  "version": "0.1.0",
+  "description": "Drop-in spec-driven development kit for Claude Code: spec-kit with flowcharts, walkthrough scripts, table diagrams, flow walkthroughs and code-quality skills, configured by one sdd.config.json.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\""
+  }
+}

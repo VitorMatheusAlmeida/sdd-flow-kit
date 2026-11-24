@@ -1,0 +1,89 @@
+{
+  "$schema": "./.specify/sdd.config.schema.json",
+  "project": {
+    "name": "my-product",
+    "locale": "pt-BR"
+  },
+  "git": {
+    "baseBranch": "main"
+  },
+  "frontend": {
+    "root": "../my-product-web/src",
+    "pages": "../my-product-web/src/app",
+    "router": "next-app-router"
+  },
+  "backend": {
+    "root": "src",
+    "framework": "nestjs",
+    "healthPath": "/health",
+    "docsPath": "/api",
+    "errorShape": { "code": "code", "message": "message" }
+  },
+  "auth": {
+    "loginPath": "/auth/login",
+    "loginBody": { "email": "{email}", "password": "{password}" },
+    "tokenPath": "access_token",
+    "headerScheme": "Bearer",
+    "cookieName": "token"
+  },
+  "commands": {
+    "lint": "npm run lint",
+    "typecheck": "npx tsc --noEmit",
+    "test": "npm run test",
+    "testRelated": "npx jest --bail --findRelatedTests --passWithNoTests",
+    "e2e": "npm run test:e2e",
+    "build": "npm run build",
+    "audit": "npm audit --omit=dev"
+  },
+  "environments": {
+    "local": {
+      "frontendUrl": "http://localhost:3000",
+      "backendUrl": "http://localhost:3001"
+    }
+  },
+  "accounts": {
+    "source": "prisma/seed.ts",
+    "passwordEnv": "SDD_TEST_PASSWORD",
+    "roles": {
+      "admin": "admin@example.test",
+      "owner": "owner@example.test",
+      "otherOwner": "other-owner@example.test",
+      "member": "member@example.test"
+    }
+  },
+  "testEmail": "qa@example.test",
+  "walkthrough": {
+    "outputDir": "passagem",
+    "viewports": [1280, 390],
+    "minTouchTargetPx": 40,
+    "testDataPrefix": "QA_",
+    "notFoundText": "Página não encontrada",
+    "designSkill": "frontend-design:frontend-design",
+    "domainRules": ["docs/rules/pricing.md"],
+    "decisions": {
+      "dbIdsInUrl": "forbid",
+      "urlLanguage": "pt-BR",
+      "sentenceCase": true
+    },
+    "text": {
+      "pluralNouns": ["pedidos", "membros", "mensagens"]
+    },
+    "selectors": {
+      "toast": "[data-sonner-toast]"
+    },
+    "sensitiveKeys": [],
+    "personKeys": [],
+    "codeRules": [
+      {
+        "point": 12,
+        "pattern": "className=\"container\\b",
+        "onlyIn": "\\(public\\)",
+        "message": "página pública com `container` sem recuo: use o contêiner do layout"
+      }
+    ]
+  },
+  "tables": {
+    "source": "dbml/schema.dbml",
+    "base": "main"
+  }
+}

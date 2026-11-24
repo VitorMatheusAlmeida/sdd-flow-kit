@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+# Optional: point people to the specs before they open an issue (GitHub requires an absolute URL).
+# contact_links:
+#   - name: 📚 Specs
+#     url: https://github.com/<owner>/<repo>/tree/main/specs
+#     about: Before opening, check whether the feature spec already describes the case (rules, flows and walkthrough scripts)

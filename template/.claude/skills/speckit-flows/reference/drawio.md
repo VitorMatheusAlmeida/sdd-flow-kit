@@ -1,0 +1,94 @@
+# `fluxos.drawio` conventions
+
+One file per feature, **one page per flow** (`R## — <Jornada>`) and a `Visão geral` page. The script reads any `.drawio` (compressed or not), but the generated file is **uncompressed**, so the git history stays readable — in draw.io, keep *File › Properties › Compressed* unchecked.
+
+Labels are generated content: **pt-BR**. Kinds, ids and attribute names are tooling: English.
+
+## Lanes
+
+Vertical columns (`swimlane`), one per acting role, in the order they enter the flow, plus `Sistema` (what the backend does on its own) and `E-mail` when something is sent. A node belongs to the lane it is drawn in.
+
+## Node kinds
+
+The kind lives in the node's `kind` attribute (*Edit Data* in draw.io). A node without `kind` gets its kind inferred from shape and color — so, to add a node, **copy a node of the same kind** instead of taking a shape from the palette. Files created before the English tooling used a `tipo` attribute with Portuguese values; the script still reads them.
+
+| `kind` | Shape and color | What goes in the label (pt-BR) |
+|---|---|---|
+| `start` | green ellipse | the trigger: "Aluno abre Cursos › detalhe do curso" |
+| `end` | green ellipse, thick border | the observable result: "Inscrição confirmada" |
+| `screen` | blue rectangle | the screen that opens, with the name shown on it |
+| `input` | yellow parallelogram | the input: **field** · required? · rule (format, size, origin) |
+| `action` | grey rounded rectangle | who does what: "[Inscrever-se]" (button, with the on-screen text) or "Sistema grava a inscrição" |
+| `decision` | purple rhombus | the question: "Ainda há vaga?" — **every exit labeled** |
+| `error` | red rectangle | `E#` and the exact message: "E1 · As vagas deste curso acabaram." |
+| `variant` | dashed orange rectangle | an alternative path that is not an error (the ✎ of the script) |
+| `external` | dashed document | effect outside the screen: e-mail (to whom, with what), notice to another role |
+| `note` | note | a rule that does not fit a box, linked to the node it applies to |
+
+Edges to or from an `external` node are dashed (it happens elsewhere — the `─ ─ ─►` of the script).
+
+## Ids
+
+The id is what ties drawing, script and diff together. Moving, recoloring or resizing changes nothing; changing the id means removing a node and creating another.
+
+| Id | Is |
+|---|---|
+| `R##-INI`, `R##-FIM` (`-FIM2`…) | start and ends |
+| `R##-P01`… | happy-path step — the `①` of the script |
+| `R##-E01`… | error — the `E1` of the script's stress table |
+| `R##-I01`… | input that is not a step |
+| `R##-A01`… | action that is not a step |
+| `R##-D01`… | decision |
+| `R##-V01`… | variant |
+| `R##-X01`… | external effect |
+| `R##-N01`… | note |
+| `R##-L001`… | edge (generated; no need to keep) |
+
+A node drawn by hand in draw.io gets a random id; `diff` flags it as "(no flow id)" and `/speckit-flows sync` replaces it with the convention id.
+
+## Source for `generate`
+
+Used only to create the file (the draw.io becomes the source afterwards). `row` and `column` place the node inside its lane (row 1 at the top; column 0 on the left, 1 and 2 to the right for error and variant branches). Without `row`, the node goes one row below the previous one.
+
+```json
+{
+  "pages": [
+    {
+      "id": "visao-geral",
+      "name": "Visão geral",
+      "lanes": ["Fluxos"],
+      "nodes": [
+        { "id": "R01", "kind": "action", "text": "R01 · Inscrever-se num curso" },
+        { "id": "R02", "kind": "action", "text": "R02 · Acompanhar as inscrições" }
+      ],
+      "edges": [{ "from": "R01", "to": "R02", "label": "inscrição confirmada" }]
+    },
+    {
+      "id": "R01",
+      "name": "Inscrever-se num curso",
+      "lanes": ["Aluno", "Sistema", "E-mail"],
+      "nodes": [
+        { "id": "R01-INI", "kind": "start", "text": "Aluno abre\nCursos › detalhe do curso", "lane": "Aluno", "row": 1 },
+        { "id": "R01-P01", "kind": "input", "text": "Turma · obrigatória\numa das turmas abertas", "lane": "Aluno", "row": 2 },
+        { "id": "R01-P02", "kind": "action", "text": "[Inscrever-se]", "lane": "Aluno", "row": 3 },
+        { "id": "R01-D01", "kind": "decision", "text": "Ainda há vaga?", "lane": "Sistema", "row": 3 },
+        { "id": "R01-E01", "kind": "error", "text": "E1 · As vagas deste curso acabaram.", "lane": "Sistema", "row": 3, "column": 1 },
+        { "id": "R01-A01", "kind": "action", "text": "Sistema grava a inscrição\ne reserva a vaga", "lane": "Sistema", "row": 4 },
+        { "id": "R01-X01", "kind": "external", "text": "E-mail ao aluno:\ninscrição confirmada", "lane": "E-mail", "row": 4 },
+        { "id": "R01-FIM", "kind": "end", "text": "Inscrição confirmada", "lane": "Sistema", "row": 5 }
+      ],
+      "edges": [
+        { "from": "R01-INI", "to": "R01-P01" },
+        { "from": "R01-P01", "to": "R01-P02" },
+        { "from": "R01-P02", "to": "R01-D01" },
+        { "from": "R01-D01", "to": "R01-E01", "label": "Sim" },
+        { "from": "R01-D01", "to": "R01-A01", "label": "Não" },
+        { "from": "R01-A01", "to": "R01-X01" },
+        { "from": "R01-A01", "to": "R01-FIM" }
+      ]
+    }
+  ]
+}
+```
+
+The `visao-geral` page is not checked against a script (only `R##` pages are).
