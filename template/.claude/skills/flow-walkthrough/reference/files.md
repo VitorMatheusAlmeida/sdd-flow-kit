@@ -54,7 +54,7 @@ All in the walkthrough folder (`<dir>`): `<feature>/<walkthrough.outputDir>` wit
 }
 ```
 
-- `accounts`: names from `accounts.roles` of `sdd.config.json` (default: all). `anonymous` always exists and has no session. Password: `--password` or the variable named in `accounts.passwordEnv`.
+- `accounts`: names from `accounts.roles` of `sdd.config.json` (default: all). `anonymous` always exists and has no session. Password: read it in `accounts.source` (the seed) and pass `--password`; `accounts.passwordEnv` or `accounts.password` exist for setups where the seed does not state it.
 - `owners`: accounts with legitimate access; a success for another account becomes `foreign-2xx`. Per call with `owners`; `public: true` removes the alert.
 - Variables: `{name}` (saved by `setup`, or from `fixed`), `{inDays:40}` / `{daysAgo:3}` (ISO dates), `{rand}` (unique suffix per run), `{prefix}` (`walkthrough.testDataPrefix`), `{null}` (an id that does not exist; `nullId` in the scenario changes it, e.g. `0` for numeric ids).
 - `parity`: runs the call again as `account` with the variables of `replace` swapped, and compares status, code **and message** (fields from `backend.errorShape`). Different = the API reveals what exists.

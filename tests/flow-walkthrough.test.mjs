@@ -121,23 +121,48 @@ test('the project .env fills unset variables (testEmailEnv, password) and the sh
   fs.writeFileSync(configFile, JSON.stringify(config));
   fs.writeFileSync(path.join(dir, '.env'), 'KIT_FIXTURE_TEST_EMAIL=qa@example.test\nKIT_FIXTURE_SHELL=from-file\n');
   process.env.KIT_FIXTURE_SHELL = 'from-shell';
-  const project = loadProject({ config: configFile });
+  const project = loadProject({ config: configFile, env: 'local' });
   assert.equal(project.testEmail, 'qa@example.test');
   assert.equal(process.env.KIT_FIXTURE_SHELL, 'from-shell');
 });
 
-test('--env <name> reads .env.<name> before .env', async () => {
-  const { loadProject } = await import('../template/.claude/skills/flow-walkthrough/scripts/lib/context.mjs');
+// show-config runs in its own process: each run starts with a clean environment.
+const showConfig = (dir, ...args) => runScript(dir, 'show-config.mjs', ...args);
+
+test('URLs come from the env file of the environment (PORT + prefix, FRONTEND_URL); test is the default', () => {
   const dir = fixtureCopy();
+  const test = showConfig(dir);
+  assert.equal(test.code, 0, test.err);
+  assert.match(test.out, /environment\s+test/);
+  assert.match(test.out, /env\.backendUrl\s+http:\/\/localhost:4802\/api\s+\.env\.test: PORT \+ prefix/);
+  assert.match(test.out, /env\.frontendUrl\s+http:\/\/localhost:3000\s+\.env\.test: FRONTEND_URL/);
+  const local = showConfig(dir, '--env', 'local');
+  assert.match(local.out, /env\.backendUrl\s+http:\/\/localhost:3001\/api\s+\.env: PORT \+ prefix/);
+});
+
+test('only the chosen environment file is read: test never borrows from .env', async () => {
+  const dir = fixtureCopy();
+  const script = "import('./context.mjs').then((m) => { m.loadProject({ config: process.argv[1] }); console.log(process.env.KIT_FIXTURE_ONLY_TEST ?? '-', process.env.KIT_FIXTURE_ONLY_LOCAL ?? '-'); })";
+  const r = spawnSync(process.execPath, ['--input-type=module', '-e', script, path.join(dir, 'sdd.config.json')], { cwd: path.join(scripts, 'lib'), encoding: 'utf8' });
+  assert.equal(r.stdout.trim(), 'from-env-test -', r.stderr);
+});
+
+test('a NestJS backend gives prefix, docs, health, login and error shape from its code; the config overrides', () => {
+  const dir = fixtureCopy();
+  const r = showConfig(dir);
+  assert.match(r.out, /backend\.prefix\s+\/api\s+code: src\/main\.ts/);
+  assert.match(r.out, /backend\.docsPath\s+\/docs\s+code: src\/main\.ts/);
+  assert.match(r.out, /backend\.healthPath\s+\/health\s+code: src\/app\.controller\.ts:5/);
+  assert.match(r.out, /backend\.errorShape\s+\{"code":null,"message":"message"\}\s+code: src\/core\/http-exception\.filter\.ts/);
+  assert.match(r.out, /auth\.loginPath\s+\/auth\/login\s+code: src\/auth\/auth\.controller\.ts:6/);
+  assert.match(r.out, /auth\.loginBody\s+\{"username":"\{login\}","password":"\{password\}"\}\s+code: src\/auth\/dto\/login\.dto\.ts/);
+  assert.match(r.out, /auth\.cookieName\s+access_token\s+code: src\/auth\/auth\.controller\.ts/);
+
   const configFile = path.join(dir, 'sdd.config.json');
   const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
-  config.environments.test = { backendUrl: 'http://localhost:3002/api' };
+  config.auth = { cookieName: 'session' };
   fs.writeFileSync(configFile, JSON.stringify(config));
-  fs.writeFileSync(path.join(dir, '.env'), 'KIT_FIXTURE_LAYER=from-env\n');
-  fs.writeFileSync(path.join(dir, '.env.test'), 'KIT_FIXTURE_LAYER=from-env-test\n');
-  const project = loadProject({ config: configFile, env: 'test' });
-  assert.equal(project.env.backendUrl, 'http://localhost:3002/api');
-  assert.equal(process.env.KIT_FIXTURE_LAYER, 'from-env-test');
+  assert.match(showConfig(dir).out, /auth\.cookieName\s+session\s+sdd\.config\.json/);
 });
 
 test('the test password comes from --password, then the variable, then accounts.password', async () => {

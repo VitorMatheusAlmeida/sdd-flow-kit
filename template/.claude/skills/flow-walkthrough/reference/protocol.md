@@ -3,9 +3,9 @@
 `<skill>` = `.claude/skills/flow-walkthrough` (or `~/.claude/skills/flow-walkthrough` when installed for the user). `<dir>` = the walkthrough folder (see SKILL.md); the scripts find it by themselves. Run from the project. Node 22+, no dependency.
 
 ## 0. Setup
-- `sdd.config.json` has what this flow needs: `frontend`, `backend`, `auth`, the environment URLs, `accounts.roles` with **two accounts of the same role**, `testEmail`.
+- `sdd.config.json` has only what no other file owns: `frontend`, `backend.root`/`framework`, `accounts.roles` with **two accounts of the same role**, the walkthrough decisions. `node <skill>/scripts/show-config.mjs` shows what was read from the code and from the env file, and from where.
 - The flow entry in `<dir>/flows.json` ([`files.md`](files.md)): `screens` (globs over `frontend.pages`, or the list when `router` is `manual`), `exclude`, `controllers` (files over `backend.root`), `routeFilter`, `publicRoutes` with `examples`.
-- Bring frontend and backend up; check that they answer. Set the test password in the variable of `accounts.passwordEnv`, or in `accounts.password` when it is the public password of the seed.
+- Bring frontend and backend up in the environment of the walkthrough (`test` by default: its own database, seeded); check that they answer. Read the test password in `accounts.source` (the seed) and pass it with `--password`.
 
 ## 1. Inventory → matrix
 ```
