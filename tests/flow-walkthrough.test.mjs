@@ -139,3 +139,15 @@ test('--env <name> reads .env.<name> before .env', async () => {
   assert.equal(project.env.backendUrl, 'http://localhost:3002/api');
   assert.equal(process.env.KIT_FIXTURE_LAYER, 'from-env-test');
 });
+
+test('the test password comes from --password, then the variable, then accounts.password', async () => {
+  const { testPassword } = await import('../template/.claude/skills/flow-walkthrough/scripts/lib/scenario.mjs');
+  const project = { accounts: { passwordEnv: 'KIT_FIXTURE_PASSWORD', password: 'Seed@123' } };
+  delete process.env.KIT_FIXTURE_PASSWORD;
+  assert.equal(testPassword(project, {}), 'Seed@123');
+  process.env.KIT_FIXTURE_PASSWORD = 'from-env';
+  assert.equal(testPassword(project, {}), 'from-env');
+  assert.equal(testPassword(project, { password: 'from-arg' }), 'from-arg');
+  delete process.env.KIT_FIXTURE_PASSWORD;
+  assert.throws(() => testPassword({ accounts: { passwordEnv: 'KIT_FIXTURE_PASSWORD' } }, {}), /No test password/);
+});

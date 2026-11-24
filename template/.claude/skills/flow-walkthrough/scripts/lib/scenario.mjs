@@ -32,7 +32,9 @@ export function testPassword(project, args) {
   if (typeof args.password === 'string') return args.password;
   const value = process.env[project.accounts.passwordEnv];
   if (value) return value;
-  throw new Error(`No test password: pass --password or set ${project.accounts.passwordEnv}.`);
+  // A public development password (e.g. the one the seed creates and the README documents) may live in the config.
+  if (typeof project.accounts.password === 'string' && project.accounts.password) return project.accounts.password;
+  throw new Error(`No test password: pass --password, set ${project.accounts.passwordEnv}, or set accounts.password in sdd.config.json.`);
 }
 
 export const pick = (object, dotPath) => dotPath.split('.').reduce((o, k) => (o == null ? undefined : o[k]), object);

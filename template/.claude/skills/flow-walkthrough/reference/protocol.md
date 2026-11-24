@@ -5,7 +5,7 @@
 ## 0. Setup
 - `sdd.config.json` has what this flow needs: `frontend`, `backend`, `auth`, the environment URLs, `accounts.roles` with **two accounts of the same role**, `testEmail`.
 - The flow entry in `<dir>/flows.json` ([`files.md`](files.md)): `screens` (globs over `frontend.pages`, or the list when `router` is `manual`), `exclude`, `controllers` (files over `backend.root`), `routeFilter`, `publicRoutes` with `examples`.
-- Bring frontend and backend up; check that they answer. Set the test password in `accounts.passwordEnv`.
+- Bring frontend and backend up; check that they answer. Set the test password in the variable of `accounts.passwordEnv`, or in `accounts.password` when it is the public password of the seed.
 
 ## 1. Inventory → matrix
 ```

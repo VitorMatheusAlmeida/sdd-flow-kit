@@ -101,7 +101,8 @@
       "description": "Test accounts. Never real people; the password comes from an environment variable.",
       "properties": {
         "source": { "type": "string", "description": "Where the accounts are created (seed file)." },
-        "passwordEnv": { "type": "string", "default": "SDD_TEST_PASSWORD" },
+        "passwordEnv": { "type": "string", "default": "SDD_TEST_PASSWORD", "description": "Environment variable (shell or project .env) holding the test password. Wins over accounts.password." },
+        "password": { "type": "string", "description": "The test password itself, ONLY when it is a public development value (e.g. the password the seed creates). A real secret goes in passwordEnv." },
         "roles": {
           "type": "object",
           "additionalProperties": { "type": "string" },

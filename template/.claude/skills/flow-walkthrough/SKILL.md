@@ -23,7 +23,7 @@ Everything specific to a project lives in **`sdd.config.json`** at the repositor
 | `backend.healthPath`, `backend.docsPath`, `backend.errorShape` | security headers, documentation route, error code and message fields |
 | `auth.*` | how the scripts sign in with test accounts (login route, body, token path, cookie) |
 | `environments.<name>` | frontend and backend URLs (the first one unless `--env`); with `--env <name>` the scripts read `.env.<name>` before `.env` (e.g. `--env test` → `.env.test`) |
-| `accounts.roles`, `accounts.passwordEnv`, `accounts.source` | test accounts (never real people) and where they are created |
+| `accounts.roles`, `accounts.passwordEnv` or `accounts.password` (public seed password only), `accounts.source` | test accounts (never real people) and where they are created |
 | `testEmail` (or `testEmailEnv`, a variable of the shell or of the project `.env`) | the only real inbox e-mails may go to |
 | `commands.*` | how to lint, type-check, test, audit in this project |
 | `walkthrough.*` | output folder, viewports, touch target, test-data prefix, not-found text, design skill, domain rules, project decisions, extra checks |
