@@ -179,10 +179,9 @@
     },
     "tables": {
       "type": "object",
-      "description": "Defaults for speckit-tables when a feature filter omits them.",
+      "description": "speckit-tables: where the DBML generated from the schema lives (compared with tabelas.planejado.dbml).",
       "properties": {
-        "source": { "type": "string", "default": "dbml/schema.dbml" },
-        "base": { "type": "string", "description": "Branch or commit 'touched' is measured against." }
+        "source": { "type": "string", "default": "dbml/schema.dbml" }
       }
     }
   }

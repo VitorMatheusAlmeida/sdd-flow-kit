@@ -58,31 +58,29 @@ test('flows-drawio generates a draw.io and validates it against a script, in pt-
   assert.notEqual(run(dir, 'flows-drawio.mjs', 'validate', drawio, path.join(dir, 'roteiros')).status, 0);
 });
 
-test('tables-dbml writes the filtered diagram, compares with the base and protects hand edits', () => {
+test('tables-dbml checks that the planned file opens on its own and lists what changes against the schema', () => {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'sdd-tables-'));
   git(repo, 'init', '-q');
   fs.mkdirSync(path.join(repo, 'dbml'));
-  const schema = path.join(repo, 'dbml', 'schema.dbml');
-  fs.writeFileSync(schema, 'Table courses {\n  id String [pk]\n  title String [not null]\n}\n');
-  git(repo, 'add', '.');
-  git(repo, 'commit', '-q', '-m', 'base');
-  fs.writeFileSync(schema, 'Table courses {\n  id String [pk]\n  title String [not null]\n  seatLimit Int\n}\n\nTable enrollments {\n  id String [pk]\n}\n');
-
+  fs.writeFileSync(path.join(repo, 'sdd.config.json'), JSON.stringify({ tables: { source: 'dbml/schema.dbml' } }));
+  const level = 'Enum Level {\n  BASIC\n  ADVANCED\n}\n';
+  fs.writeFileSync(path.join(repo, 'dbml', 'schema.dbml'), `Table courses {\n  id String [pk]\n  title String [not null]\n}\n\n${level}`);
   const feature = path.join(repo, 'specs', '001-x');
   fs.mkdirSync(feature, { recursive: true });
-  fs.writeFileSync(path.join(feature, 'tabelas.filtro.json'), JSON.stringify({ title: 'Spec 001', base: 'HEAD', baseLabel: 'a base', groups: { inscricao: ['courses', 'enrollments'] } }));
+  const planned = path.join(feature, 'tabelas.planejado.dbml');
+  const courses = 'Table courses {\n  id String [pk]\n  title String [not null]\n  seatLimit Int\n}\n';
+  const enrollments = 'Table enrollments {\n  id String [pk]\n  courseId String [ref: > courses.id]\n  level Level\n}\n';
 
-  const first = run(repo, 'tables-dbml.mjs', feature);
-  assert.equal(first.status, 0, first.stderr + first.stdout);
-  const out = fs.readFileSync(path.join(feature, 'tabelas.dbml'), 'utf8');
-  assert.match(out, /^\/\/ assinatura: [0-9a-f]{16}/);
-  assert.match(out, /ALTERADA desde a base: \+seatLimit/);
-  assert.match(out, /NOVA desde a base/);
-  assert.match(run(repo, 'tables-dbml.mjs', feature, '--check').stdout, /up to date/);
+  fs.writeFileSync(planned, enrollments);
+  const missing = run(repo, 'tables-dbml.mjs', feature);
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /ref to "courses"/);
+  assert.match(missing.stderr, /enum "Level" is used but not defined/);
 
-  fs.writeFileSync(path.join(feature, 'tabelas.dbml'), out.replace('seatLimit Int', 'seatLimit Int [not null]'));
-  const check = run(repo, 'tables-dbml.mjs', feature, '--check');
-  assert.match(check.stdout + check.stderr, /hand edits/);
-  assert.notEqual(run(repo, 'tables-dbml.mjs', feature).status, 0);
-  assert.equal(run(repo, 'tables-dbml.mjs', feature, '--force').status, 0);
+  fs.writeFileSync(planned, `${courses}\n${enrollments}\n${level}\nTableGroup inscricao {\n  courses\n  enrollments\n}\n`);
+  const ok = run(repo, 'tables-dbml.mjs', feature);
+  assert.equal(ok.status, 0, ok.stderr + ok.stdout);
+  assert.match(ok.stdout, /courses: changes \+seatLimit/);
+  assert.match(ok.stdout, /enrollments: new/);
+  assert.deepEqual(fs.readdirSync(feature), ['tabelas.planejado.dbml']);
 });

@@ -55,18 +55,16 @@ specs/[###-feature]/
 ├── data-model.md        # Phase 1 output (/speckit-plan command)
 ├── quickstart.md        # Phase 1 output (/speckit-plan command)
 ├── contracts/           # Phase 1 output (/speckit-plan command)
-├── fluxos.drawio        # after_plan hook (/speckit-flows): detailed decision flowchart, editable
-├── roteiros/            # after_plan hook (/speckit-flows): README.md + R##-*.md (walkthrough scripts)
-├── tabelas.filtro.json  # after_plan hook (/speckit-tables): what the owner wants to see in the diagram
-├── tabelas.planejado.dbml # after_plan hook (/speckit-tables): new/changed tables not implemented yet
-├── tabelas.dbml         # after_plan hook (/speckit-tables): GENERATED, for dbdiagram.io
+├── fluxos.drawio        # /speckit-flows (optional, recommended): detailed decision flowchart, editable
+├── roteiros/            # /speckit-flows (optional, recommended): README.md + R##-*.md (walkthrough scripts)
+├── tabelas.planejado.dbml # /speckit-tables (optional, recommended): the tables of the spec, to paste into dbdiagram.io
 └── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```
 
 ### Flows, Walkthroughs and Tables
 
 <!--
-  sdd-flow-kit override. Filled after the after_plan hooks (speckit-tables and speckit-flows), in the project language (`project.locale` in sdd.config.json).
+  sdd-flow-kit override. Filled when /speckit-tables and /speckit-flows are run (optional but recommended right after the plan; the after_plan hooks suggest them), in the project language (`project.locale` in sdd.config.json).
   List only the summary; the detail lives in the files.
 -->
 
@@ -74,7 +72,7 @@ specs/[###-feature]/
 | ---- | ----------------- | ------------------------------- | ------------ |
 | R01  | `R01 — [journey]` | [roteiros/R01-…md](./roteiros/) | US1 · FR-001 |
 
-**Tables**: [tabelas.dbml](./tabelas.dbml) — [groups and how many tables are new, changed and planned].
+**Tables**: [tabelas.planejado.dbml](./tabelas.planejado.dbml) — [groups and how many tables are new and changed].
 
 ### Source Code (repository root)
 

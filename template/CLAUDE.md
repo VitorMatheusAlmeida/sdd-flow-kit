@@ -5,13 +5,13 @@ This project uses **sdd-flow-kit**: spec-driven development with spec-kit, flowc
 ## Where project facts live
 
 - **`sdd.config.json`** (repository root) is the single source of project setup: language, base branch, frontend and backend paths, how to run lint and tests, environments, test accounts, walkthrough decisions. Skills read it; do not hard-code its values anywhere else, and do not guess them — when a key is missing, ask.
-- **`specs/<feature>/`** holds each feature: `spec.md`, `plan.md`, `tasks.md`, `fluxos.drawio`, `roteiros/`, `tabelas.dbml`, and the walkthrough folder.
+- **`specs/<feature>/`** holds each feature: `spec.md`, `plan.md`, `tasks.md`, `fluxos.drawio`, `roteiros/`, `tabelas.planejado.dbml`, and the walkthrough folder.
 - **`.specify/memory/constitution.md`** holds the project principles (`/speckit-constitution`).
 
 ## How work flows
 
 1. `/speckit-specify` → `/speckit-clarify` (when needed) → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement`.
-2. Hooks in `.specify/extensions.yml` run `speckit-tables` and `speckit-flows` after plan, tasks and implement, and before `/speckit-converge`. The owner edits `fluxos.drawio` and `tabelas.dbml`; the next run judges each edit before absorbing it.
+2. `/speckit-tables` and `/speckit-flows` are optional but recommended, like `/speckit-clarify`: the hooks in `.specify/extensions.yml` suggest them after plan, tasks and implement, and before `/speckit-converge`; they run when invoked. The owner edits `fluxos.drawio` and `tabelas.planejado.dbml`; the next run judges each edit before absorbing it.
 3. Each flow (`R##`) is closed by a walkthrough with the `flow-walkthrough` skill: 18 points, matrix, second round. The PR goes out only when the matrix is complete and the owner asks.
 
 ## Quality bar — before calling anything done

@@ -3,8 +3,8 @@
 A drop-in **spec-driven development** setup for [Claude Code](https://claude.com/claude-code). Copy it into a project, fill in one file (`sdd.config.json`), and you get:
 
 - **[GitHub Spec Kit](https://github.com/github/spec-kit)**, already installed (Claude integration): `/speckit-specify → /speckit-plan → /speckit-tasks → /speckit-implement`.
-- **Flowcharts and walkthrough scripts** per feature (`speckit-flows`): a detailed `fluxos.drawio` you can edit in draw.io, and one test script per user journey. Your edits to the drawing are read, judged and turned into impact on scripts, spec and tasks.
-- **Table diagrams** per feature (`speckit-tables`): a `tabelas.dbml` for [dbdiagram.io](https://dbdiagram.io) with only the tables the feature touches, each one labelled new / changed / planned against the base branch. Hand edits are protected and absorbed only after review.
+- **Flowcharts and walkthrough scripts** per feature (`speckit-flows`): a detailed `fluxos.drawio` you can edit in draw.io (the whole process map on the first page, then one page per journey), and one test script per user journey. Your edits to the drawing are read, judged and turned into impact on scripts, spec and tasks.
+- **Table diagrams** per feature (`speckit-tables`): one `tabelas.planejado.dbml` to paste into [dbdiagram.io](https://dbdiagram.io), with only the tables of the spec as they will be (new and changed), the tables they reference and the enums they use, so it opens on its own. A checker lists what changes against the current schema; your edits made in dbdiagram are judged before they are kept.
 - **Flow walkthroughs** (`flow-walkthrough`): a manual test battery with fixes for each journey — 18 points per screen and route, a matrix generated from the code, scans of code, API, security, accounts and screens, captures at every viewport, and a second round before the PR.
 - **Code-quality skills**: `clean-code`, `modulos-backend` (NestJS + Prisma module structure, queries, cache and queues) and `code-analyze` (reviews that hunt bugs and flow problems).
 - **Project hygiene**: husky hooks that lint and run **only the tests related to the staged files**, Conventional Commits, ESLint architecture rules, issue and PR templates.
@@ -13,16 +13,18 @@ Everything project-specific lives in `sdd.config.json`. No skill hard-codes a pa
 
 ## How it fits together
 
+`/speckit-flows` and `/speckit-tables` are optional but recommended, like `/speckit-clarify`: the spec-kit hooks suggest them at the right point of the cycle, and they run only when you invoke them. Skip one only when the feature has nothing for it (no journeys, no tables).
+
 ```text
 /speckit-specify ─► spec.md (flows, preserved behaviour for refactors)
 /speckit-plan ────► plan.md, data-model, contracts
-                    └─ hooks ─► speckit-tables ─► tabelas.dbml (dbdiagram)
-                              └ speckit-flows ──► fluxos.drawio + roteiros/R##-*.md
+                    └─ recommended ─► /speckit-tables ─► tabelas.planejado.dbml (dbdiagram)
+                                    └ /speckit-flows ──► fluxos.drawio + roteiros/R##-*.md
 /speckit-tasks ───► tasks.md
-                    └─ hook ──► speckit-flows ──► one "walkthrough of R##" task per script
+                    └─ recommended ─► /speckit-flows ──► one "walkthrough of R##" task per script
 /speckit-implement► code
-                    └─ hook ──► speckit-tables ─► diagram regenerated from the real schema
-/speckit-converge ◄─ hooks ──── absorb your edits to fluxos.drawio and tabelas.dbml (judged, not blindly applied)
+                    └─ recommended ─► /speckit-tables ─► planned file checked against the real schema
+/speckit-converge ◄─ recommended ──── absorb your edits to fluxos.drawio and tabelas.planejado.dbml (judged, not blindly applied)
 walkthrough R## ──► flow-walkthrough: matrix-R##.md, scans, captures, fixes, second round ─► PR on request
 ```
 
@@ -126,7 +128,7 @@ generator dbml {
 }
 ```
 
-`npx prisma generate` now writes `dbml/schema.dbml` — the `tables.source` of the config. Commit it: the diagrams compare it with the base branch through git.
+`npx prisma generate` now writes `dbml/schema.dbml` — the `tables.source` of the config. Commit it: the table checker compares each feature's planned file with it.
 
 ### 4. Quality gates (husky + lint-staged + commitlint)
 
@@ -171,8 +173,8 @@ Adjust `PRISMA_SERVICE` to your path. Recommended next to it: `@typescript-eslin
 | Command | What happens |
 |---|---|
 | `/speckit-specify <description>` | creates `specs/NNN-name/spec.md`; the spec lists its flows (journeys) and, for a refactor, the behaviour that must not change |
-| `/speckit-plan` | plan, data model, contracts; then the hooks create `tabelas.dbml` and `fluxos.drawio` + `roteiros/` |
-| edit `fluxos.drawio` / `tabelas.dbml` | commit the generated files first; then edit freely. The next `/speckit-flows` or `/speckit-tables` (or `/speckit-converge`) reads the diff against git, judges each change and applies only what is valid — intent changes are asked, never assumed |
+| `/speckit-plan` | plan, data model, contracts; then the hooks recommend `/speckit-tables` (`tabelas.planejado.dbml`) and `/speckit-flows` (`fluxos.drawio` + `roteiros/`) |
+| edit `fluxos.drawio` / `tabelas.planejado.dbml` | commit the generated files first; then edit freely. The next `/speckit-flows` or `/speckit-tables` (or `/speckit-converge`) reads the diff against git, judges each change and applies only what is valid — intent changes are asked, never assumed |
 | `/speckit-tasks` | tasks, plus one walkthrough task per flow script |
 | `/speckit-implement` | implementation; the table diagram is regenerated from the real schema |
 | `/speckit-converge` | absorbs drawing and diagram edits, then adds the work still missing as tasks |
