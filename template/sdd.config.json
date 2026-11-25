@@ -83,7 +83,6 @@
     ]
   },
   "tables": {
-    "source": "dbml/schema.dbml",
-    "base": "main"
+    "source": "dbml/schema.dbml"
   }
 }
